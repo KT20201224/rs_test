@@ -63,14 +63,20 @@ class GeminiModel(APIModelBase):
     def __init__(self, model_name: str, api_key: str = None):
         super().__init__(model_name)
         
-        # [CRITICAL Fix for GCP VM] 
-        # Force remove automatic GCP credentials to prevent '401 API keys are not supported' error.
-        # This forces the library to use the API Key provided below.
-        os.environ.pop("GOOGLE_APPLICATION_CREDENTIALS", None)
-        os.environ.pop("GOOGLE_CLOUD_PROJECT", None)
+        # [Correct Standard Fix]
+        # Explicitly define client_options to force the library to use the public API endpoint.
+        # This prevents the library from defaulting to Vertex AI endpoints when running inside GCP.
+        from google.api_core import client_options
         
-        # Force REST transport to avoid gRPC ADC/Vertex conflicts in GCP environments
-        genai.configure(api_key=api_key or os.getenv("GOOGLE_API_KEY"), transport="rest")
+        final_api_key = api_key or os.getenv("GOOGLE_API_KEY")
+        
+        genai.configure(
+            api_key=final_api_key, 
+            transport="rest",
+            client_options=client_options.ClientOptions(
+                api_endpoint="generativelanguage.googleapis.com"
+            )
+        )
         # Initialize model immediately
         self.model = genai.GenerativeModel(model_name)
 
