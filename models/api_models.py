@@ -1,5 +1,6 @@
 import time
 import os
+import requests
 from typing import Dict, Any
 import openai
 
