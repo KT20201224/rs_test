@@ -61,7 +61,9 @@ class GeminiModel(APIModelBase):
         super().__init__(model_name)
         # New V1 SDK usage: from google import genai
         from google import genai
-        self.client = genai.Client(api_key=api_key or os.getenv("GOOGLE_API_KEY"))
+        # Explicitly set http_options or backend to ensure it uses the API Key (AI Studio) path
+        # and not Vertex AI which requires OAuth.
+        self.client = genai.Client(api_key=api_key or os.getenv("GOOGLE_API_KEY"), http_options={'api_version': 'v1beta'})
 
     def generate(self, system_prompt: str, user_prompt: str, **kwargs) -> LLMResponse:
         start_time = time.perf_counter()
