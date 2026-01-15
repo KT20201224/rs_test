@@ -3,12 +3,8 @@ import json
 import tqdm
 from typing import List, Dict, Any
 from .test_cases import PERSONA_GEN_CASES
-from .metrics import (
     calculate_persona_generation_metrics,
-    calculate_persona_rating_metrics,
-    calculate_menu_recommend_metrics,
     calculate_consistency_metrics,
-    calculate_cot_quality,
 )
 from models.unified_interface import UnifiedLLMInterface
 from utils.cost_tracker import CostTracker
@@ -60,9 +56,6 @@ class Evaluator:
                 m = calculate_persona_generation_metrics(
                     case["input"], response.content
                 )
-                # Add CoT score
-                data = json.loads(response.content) if m.get("json_validity") else {}
-                m["cot_quality"] = calculate_cot_quality(data.get("reasoning", ""))
 
                 run_metrics_list.append(m)
 

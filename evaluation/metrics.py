@@ -37,9 +37,11 @@ def calculate_persona_generation_metrics(
     metrics = {
         "json_validity": 0.0,
         "field_completeness": 0.0,
-        "value_accuracy": 0.0,  # Check if critical fields like gender/age preserved
-        "inference_quality": 0.5,  # Placeholder, hard to auto-eval without ground truth or another LLM
+        "value_accuracy": 0.0,
         "schema_compliance": 0.0,
+        "cot_depth_score": 0.0,
+        "persona_specificity": 0.0,
+        "safety_consistency": 0.0,
     }
 
     data = extract_json(response_text)
@@ -59,7 +61,7 @@ def calculate_persona_generation_metrics(
         present_fields = [f for f in required_fields if f in data]
         metrics["field_completeness"] = len(present_fields) / len(required_fields)
 
-        # Schema compliance - check types
+        # Schema compliance
         valid_types = True
         if "allergies" in data and not isinstance(data["allergies"], list):
             valid_types = False
@@ -67,64 +69,75 @@ def calculate_persona_generation_metrics(
             1.0 if valid_types and metrics["field_completeness"] == 1.0 else 0.0
         )
 
-        # Value Accuracy check (simple check of name preservation)
+        # 1. Attribute Consistency Check (Basic Value Accuracy)
         if input_data.get("name") == data.get("name"):
             metrics["value_accuracy"] = 1.0
 
-        # Inference checklist: if input had no allergies, output should usually match or be empty list
-        if not input_data.get("allergies") and not data.get("allergies"):
-            pass  # Good
+        # 2. Safety/Consistency (Hallucination Check)
+        input_allergies = set(input_data.get("allergies", []))
+        output_allergies = set(data.get("allergies", []))
+
+        # It's okay to add more (inference), but dropping explicit allergies is CRITICAL failure
+        if input_allergies.issubset(output_allergies):
+            metrics["safety_consistency"] = 1.0
+        else:
+            # Failed to preserve critical medical info
+            metrics["safety_consistency"] = 0.0
+
+        # Check if preferred foods contain allergy items (Rule-based simple check)
+        preferences = " ".join(
+            data.get("preferred_food_categories", [])
+            + data.get("preferred_ingredients", [])
+        )
+        if any(allergen in preferences for allergen in output_allergies):
+            metrics["safety_consistency"] = 0.5  # Contradiction in output
+
+        # 3. Persona Specificity Score
+        # Check description for specific keywords indicating depth
+        desc = data.get("description", "")
+        # Keywords: contexts, emotions, specifics
+        detail_keywords = [
+            "퇴근",
+            "주말",
+            "스트레스",
+            "혼밥",
+            "데이트",
+            "회식",
+            "다이어트",
+            "건강",
+            "가성비",
+            "분위기",
+            "조용한",
+            "시끄러운",
+        ]
+        specificity_score = 0.0
+        if len(desc) > 30:
+            specificity_score += 0.4
+        found_keywords = [k for k in detail_keywords if k in desc]
+        specificity_score += min(0.6, len(found_keywords) * 0.2)
+        metrics["persona_specificity"] = specificity_score
+
+        # 4. Reasoniong Depth (CoT)
+        reasoning = data.get("reasoning", "")
+        logic_keywords = [
+            "때문에",
+            "위해",
+            "하므로",
+            "따라서",
+            "추론",
+            "생각",
+            "고려",
+            "based on",
+            "implies",
+        ]
+        cot_score = 0.0
+        if len(reasoning) > 50:
+            cot_score += 0.3
+        if any(k in reasoning for k in logic_keywords):
+            cot_score += 0.4
+        # Bonus for linking two facts
+        if len(reasoning) > 100:
+            cot_score += 0.3
+        metrics["cot_depth_score"] = min(1.0, cot_score)
 
     return metrics
-
-
-def calculate_consistency_metrics(responses: List[str]) -> Dict[str, float]:
-    """Check consistency across multiple runs (simple string/json similarity)"""
-    if not responses:
-        return {"consistency": 0.0}
-    if len(responses) == 1:
-        return {"consistency": 1.0}
-
-    # Extract key values for comparison (hash of core fields)
-    hashes = []
-    for r in responses:
-        data = extract_json(r)
-        if not data:
-            hashes.append("error")
-            continue
-        # Compare core fields only
-        core_data = {
-            k: data.get(k) for k in ["name", "allergies", "preferred_food_categories"]
-        }
-        hashes.append(str(core_data))
-
-    unique_hashes = set(hashes)
-    consistency_score = 1.0 / len(unique_hashes) if unique_hashes else 0.0
-    return {"consistency": consistency_score}
-
-
-def calculate_cot_quality(reasoning: str) -> float:
-    """Evaluate Chain-of-Thought quality based on length and keywords"""
-    if not reasoning:
-        return 0.0
-    score = 0.5  # Base score for having reasoning
-
-    # Length check
-    if len(reasoning) > 50:
-        score += 0.2
-
-    # Logic keywords
-    keywords = [
-        "because",
-        "therefore",
-        "since",
-        "implies",
-        "constraint",
-        "preference",
-        "user",
-        "allergy",
-    ]
-    if any(k in reasoning.lower() for k in keywords):
-        score += 0.3
-
-    return min(1.0, score)
