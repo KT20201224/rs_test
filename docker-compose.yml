@@ -15,13 +15,13 @@ services:
     # command: --models gpt-4o-mini gemini-2.0-flash
     # Run all models:
     # command: --models all
-    command: --models gpt-4o-mini gemini-2.0-flash
+    command: --models all
 
     # Uncomment below to enable GPU support (requires nvidia-docker)
-    # deploy:
-    #   resources:
-    #     reservations:
-    #       devices:
-    #         - driver: nvidia
-    #           count: 1
-    #           capabilities: [gpu]
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
