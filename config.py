@@ -9,16 +9,13 @@ GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 
 
 # Model Names
-API_MODELS = {
-    "gpt-4o-mini": "gpt-4o-mini"
-}
+API_MODELS = {"gpt-4o-mini": "gpt-4o-mini"}
 
 LOCAL_MODELS = {
     "qwen2.5-7b": "Qwen/Qwen2.5-7B-Instruct",
     "gemma-2-9b": "google/gemma-2-9b-it",
-    "ax-4.0-light": "skt/A.X-4.0-Light"
+    "ax-4.0-light": "skt/A.X-4.0-Light",
 }
-
 
 
 # Pricing (USD per 1M tokens) - Estimated for early 2025/Late 2024
@@ -27,50 +24,42 @@ MODEL_PRICING = {
     # Local models have 0 direct cost per token, but we track memory/time
     "qwen2.5-14b": {"input": 0, "output": 0},
     "gemma-2-9b": {"input": 0, "output": 0},
-    "ax-4.0-light": {"input": 0, "output": 0}
+    "ax-4.0-light": {"input": 0, "output": 0},
 }
 
 
 # System Prompts
 SYSTEM_PROMPTS = {
-    "make_persona": """당신은 데이터 분석 전문가입니다.
-입력된 사용자 프로필을 바탕으로 구조화된 페르소나 JSON 객체를 생성하세요.
-단계 1: 사용자 프로필을 분석하여 선호도와 잠재적인 제약 사항(알러지 등)을 추론하세요 (CoT).
-단계 2: 최종 JSON을 생성하세요.
-
-모든 텍스트 값은 '한국어'로 작성해야 합니다.
-오직 유효한 JSON 형식으로만 출력하세요:
-{
-    "reasoning": "string (분석 과정)",
-    "name": "string",
+    "make_persona": """당신은 '사용자 경험(UX) 리서처'이자 '행동 심리학자'입니다.
+    제공된 사용자 프로필(나이, 성별, 취향, 특이사항)을 심층 분석하여, 살아있는 실제 사람처럼 구체적이고 입체적인 '다이닝 페르소나(Dining Persona)'를 생성하세요.
+    [분석 단계 및 CoT 가이드]
+    1. **프로필 연결**: 나이/성별과 선호 음식, 그리고 'note'에 적힌 뉘앙스를 연결하여 숨겨진 욕구를 찾으세요.
+    - 예: "20대 + 헬스" -> "가성비보다는 고단백 식단과 영양 성분 중시"
+    - 예: "40대 + 매운맛 + 스트레스" -> "자극적인 맛으로 스트레스를 풀고자 함"
+    2. **상황 부여**: 이 사람이 평소 어떤 상황에서 식당을 찾을지 상상하세요. (혼밥, 회식, 데이트 등)
+    3. **가치 판단**: 식당 선택 시 절대 양보할 수 없는 것(알러지, 싫어하는 것)과 타협 가능한 것(가격, 거리)을 구분하세요.
+    [출력 요구사항]
+    - 모든 텍스트는 '한국어'로 작성하세요.
+    - 결과는 아래 JSON 형식을 엄격히 따르세요.
+    {
+    "reasoning": "string (나이, 성별, 취향을 종합한 심층 분석 내용)",
+    "name": "string (입력된 이름)",
     "gender": "string",
     "age_group": "string",
     "allergies": ["string"],
     "preferred_food_categories": ["string"],
     "preferred_ingredients": ["string"],
-    "description": "string (페르소나 요약 설명)"
-}""",
-    
-    "persona_rating": """당신은 개인화된 맛집 추천 전문가입니다.
-특정 식당이 사용자 페르소나와 얼마나 잘 맞는지 0점에서 10점 사이로 평가하세요.
-음식 취향, 알러지(매우 중요), 예산을 고려하세요.
-평가 점수에 대한 이유를 설명하세요.
-
-모든 텍스트 값은 '한국어'로 작성해야 합니다.
-출력 형식: {"score": float, "reason": "string (한국어)"}""",
-    
-    "menu_recommend": """당신은 전문 메뉴 플래너입니다.
-참가자들의 프로필과 식당 메뉴를 바탕으로 단체 식사 메뉴를 제안하세요.
-알러지가 있는 멤버를 위해 알러지 유발 재료가 없는지 반드시 확인하세요.
-그룹의 선호도를 균형 있게 고려하세요.
-
-모든 텍스트 값은 '한국어'로 작성해야 합니다.
-출력 형식: {"menu_items": ["item1", "item2"], "total_price_estimate": int, "explanation": "string (한국어)"}"""
+    "dining_style": "string (예: '맛 탐험가형', '효율 중시형', '건강 관리형', 'SNS 과시형' 등)",
+    "price_sensitivity": "string (Low/Medium/High - 추론)",
+    "preferred_atmosphere": ["string", "string"],
+    "key_decision_factors": ["string", "string"],
+    "description": "string (이 페르소나의 식습관과 라이프스타일을 한 문단으로 요약)"
+    }""",
 }
 
 # Evaluation Configuration
 EVAL_CONFIG = {
     "n_runs": 3,  # Run 3 times to check consistency
-    "timeout": 30, # seconds per call
-    "max_retries": 2
+    "timeout": 30,  # seconds per call
+    "max_retries": 2,
 }
