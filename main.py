@@ -7,7 +7,7 @@ from typing import List
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from config import API_MODELS, LOCAL_MODELS, OPENAI_API_KEY, GOOGLE_API_KEY
-from models import UnifiedLLMInterface, OpenAIModel, GeminiModel, LocalHuggingFaceModel
+from models import UnifiedLLMInterface, OpenAIModel, LocalHuggingFaceModel
 from evaluation.evaluators import Evaluator
 from utils.cost_tracker import CostTracker
 from utils.report_generator import ReportGenerator
@@ -94,11 +94,6 @@ def main():
                          print(f"Skipping {name}: OPENAI_API_KEY Missing")
                          continue
                     current_model = OpenAIModel(full_name)
-                elif "gemini" in full_name:
-                    if not GOOGLE_API_KEY:
-                        print(f"Skipping {name}: GOOGLE_API_KEY Missing")
-                        continue
-                    current_model = GeminiModel(full_name)
             
             # Local Models
             elif name in LOCAL_MODELS.keys() or name in LOCAL_MODELS.values():

@@ -10,8 +10,7 @@ GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 
 # Model Names
 API_MODELS = {
-    "gpt-4o-mini": "gpt-4o-mini",
-    "gemini-3-flash-preview": "gemini-3-flash-preview"
+    "gpt-4o-mini": "gpt-4o-mini"
 }
 
 LOCAL_MODELS = {
@@ -25,7 +24,6 @@ LOCAL_MODELS = {
 # Pricing (USD per 1M tokens) - Estimated for early 2025/Late 2024
 MODEL_PRICING = {
     "gpt-4o-mini": {"input": 0.15, "output": 0.60},
-    "gemini-3-flash-preview": {"input": 0.10, "output": 0.40}, # Estimated low cost
     # Local models have 0 direct cost per token, but we track memory/time
     "qwen2.5-14b": {"input": 0, "output": 0},
     "gemma-2-9b": {"input": 0, "output": 0},
