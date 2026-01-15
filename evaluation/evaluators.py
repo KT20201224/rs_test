@@ -4,9 +4,9 @@ import tqdm
 from typing import List, Dict, Any
 from .test_cases import PERSONA_GEN_CASES, PERSONA_RATING_CASES, MENU_REC_CASES
 from .metrics import calculate_persona_generation_metrics, calculate_persona_rating_metrics, calculate_menu_recommend_metrics, calculate_consistency_metrics, calculate_cot_quality
-from ..models.unified_interface import UnifiedLLMInterface
-from ..utils.cost_tracker import CostTracker
-from ..config import SYSTEM_PROMPTS
+from models.unified_interface import UnifiedLLMInterface
+from utils.cost_tracker import CostTracker
+from config import SYSTEM_PROMPTS
 
 class Evaluator:
     def __init__(self, models: List[UnifiedLLMInterface], cost_tracker: CostTracker):
@@ -32,7 +32,7 @@ class Evaluator:
                 return None
 
             # Run Multiple Times if Configured
-            from ..config import EVAL_CONFIG
+            from config import EVAL_CONFIG
             n_runs = EVAL_CONFIG.get("n_runs", 1)
             
             run_responses = []

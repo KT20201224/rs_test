@@ -3,7 +3,7 @@ import pandas as pd
 import os
 from datetime import datetime
 from typing import List, Dict
-from ..config import MODEL_PRICING
+from config import MODEL_PRICING
 
 class ReportGenerator:
     def __init__(self, results_dir: str):
