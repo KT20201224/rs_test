@@ -62,7 +62,8 @@ import google.generativeai as genai
 class GeminiModel(APIModelBase):
     def __init__(self, model_name: str, api_key: str = None):
         super().__init__(model_name)
-        genai.configure(api_key=api_key or os.getenv("GOOGLE_API_KEY"))
+        # Force REST transport to avoid gRPC ADC/Vertex conflicts in GCP environments
+        genai.configure(api_key=api_key or os.getenv("GOOGLE_API_KEY"), transport="rest")
         # Initialize model immediately
         self.model = genai.GenerativeModel(model_name)
 
