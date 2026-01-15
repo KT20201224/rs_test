@@ -1,7 +1,7 @@
 import time
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
-from .unified_interface import UnifiedLLMInterface, LLMResponse
+from models import UnifiedLLMInterface, LLMResponse
 
 class LocalHuggingFaceModel(UnifiedLLMInterface):
     def __init__(self, model_name_or_path: str, device: str = None):

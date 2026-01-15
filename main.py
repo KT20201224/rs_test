@@ -6,11 +6,11 @@ from typing import List
 # Ensure we can import the package modules
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from restaurant_llm_evaluation.config import API_MODELS, LOCAL_MODELS, OPENAI_API_KEY, GOOGLE_API_KEY
-from restaurant_llm_evaluation.models import UnifiedLLMInterface, OpenAIModel, GeminiModel, LocalHuggingFaceModel
-from restaurant_llm_evaluation.evaluation.evaluators import Evaluator
-from restaurant_llm_evaluation.utils.cost_tracker import CostTracker
-from restaurant_llm_evaluation.utils.report_generator import ReportGenerator
+from config import API_MODELS, LOCAL_MODELS, OPENAI_API_KEY, GOOGLE_API_KEY
+from models import UnifiedLLMInterface, OpenAIModel, GeminiModel, LocalHuggingFaceModel
+from evaluation.evaluators import Evaluator
+from utils.cost_tracker import CostTracker
+from utils.report_generator import ReportGenerator
 
 def load_models(model_names: List[str]) -> List[UnifiedLLMInterface]:
     models = []

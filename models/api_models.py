@@ -4,8 +4,8 @@ from typing import Dict, Any
 import openai
 
 
-from .unified_interface import UnifiedLLMInterface, LLMResponse
-from ..config import MODEL_PRICING
+from models import UnifiedLLMInterface, LLMResponse
+from config import MODEL_PRICING
 
 class APIModelBase(UnifiedLLMInterface):
     def calculate_cost(self, input_tokens: int, output_tokens: int) -> float:
