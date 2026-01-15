@@ -56,41 +56,42 @@ class OpenAIModel(APIModelBase):
                 error=str(e)
             )
 
+
+import google.generativeai as genai
+
 class GeminiModel(APIModelBase):
     def __init__(self, model_name: str, api_key: str = None):
         super().__init__(model_name)
-        # New V1 SDK usage: from google import genai
-        from google import genai
-        # Explicitly set http_options or backend to ensure it uses the API Key (AI Studio) path
-        # and not Vertex AI which requires OAuth.
-        self.client = genai.Client(api_key=api_key or os.getenv("GOOGLE_API_KEY"), http_options={'api_version': 'v1beta'})
+        genai.configure(api_key=api_key or os.getenv("GOOGLE_API_KEY"))
+        # Initialize model immediately
+        self.model = genai.GenerativeModel(model_name)
 
     def generate(self, system_prompt: str, user_prompt: str, **kwargs) -> LLMResponse:
         start_time = time.perf_counter()
         try:
-            # V1 SDK: client.models.generate_content
-            # Config: Use types.GenerateContentConfig for system instruction/temperature
-            from google.genai import types
-            
-            config = types.GenerateContentConfig(
-                system_instruction=system_prompt,
-                temperature=kwargs.get("temperature", 0.7)
-                # max_output_tokens not strictly needed unless specified
+            # Re-initialize with system instruction if needed or supported
+            # Note: For 1.5/2.0 Flash, system_instruction is supported in GenerativeModel init
+            self.model = genai.GenerativeModel(
+                self.model_name, 
+                system_instruction=system_prompt
             )
             
-            response = self.client.models.generate_content(
-                model=self.model_name,
-                contents=user_prompt,
-                config=config
+            # config for generation
+            generation_config = genai.types.GenerationConfig(
+                temperature=kwargs.get("temperature", 0.7)
+            )
+            
+            response = self.model.generate_content(
+                user_prompt,
+                generation_config=generation_config
             )
             
             content = response.text
             
-            # Usage tracking might vary in V1 SDK structure
-            # Attempt to access standard usage_metadata if available
+            # Usage metadata access
             usage = response.usage_metadata
-            input_tokens = usage.prompt_token_count if usage else 0
-            output_tokens = usage.candidates_token_count if usage else 0
+            input_tokens = usage.prompt_token_count
+            output_tokens = usage.candidates_token_count
             
             latency_ms = (time.perf_counter() - start_time) * 1000
             cost = self.calculate_cost(input_tokens, output_tokens)
