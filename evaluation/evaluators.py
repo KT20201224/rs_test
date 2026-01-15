@@ -3,6 +3,7 @@ import json
 import tqdm
 from typing import List, Dict, Any
 from .test_cases import PERSONA_GEN_CASES
+from .metrics import (
     calculate_persona_generation_metrics,
     calculate_consistency_metrics,
 )

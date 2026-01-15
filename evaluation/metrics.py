@@ -141,3 +141,28 @@ def calculate_persona_generation_metrics(
         metrics["cot_depth_score"] = min(1.0, cot_score)
 
     return metrics
+
+
+def calculate_consistency_metrics(responses: List[str]) -> Dict[str, float]:
+    """Check consistency across multiple runs (simple string/json similarity)"""
+    if not responses:
+        return {"consistency": 0.0}
+    if len(responses) == 1:
+        return {"consistency": 1.0}
+
+    # Extract key values for comparison (hash of core fields)
+    hashes = []
+    for r in responses:
+        data = extract_json(r)
+        if not data:
+            hashes.append("error")
+            continue
+        # Compare core fields only
+        core_data = {
+            k: data.get(k) for k in ["name", "allergies", "preferred_food_categories"]
+        }
+        hashes.append(str(core_data))
+
+    unique_hashes = set(hashes)
+    consistency_score = 1.0 / len(unique_hashes) if unique_hashes else 0.0
+    return {"consistency": consistency_score}
