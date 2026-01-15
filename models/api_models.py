@@ -57,55 +57,53 @@ class OpenAIModel(APIModelBase):
             )
 
 
-import google.generativeai as genai
-
 class GeminiModel(APIModelBase):
     def __init__(self, model_name: str, api_key: str = None):
         super().__init__(model_name)
         
-        # [Correct Standard Fix]
-        # Explicitly define client_options to force the library to use the public API endpoint.
-        # This prevents the library from defaulting to Vertex AI endpoints when running inside GCP.
-        from google.api_core import client_options
+        # [CRITICAL Fix for GCP VM] Force remove automatic GCP credentials
+        os.environ.pop("GOOGLE_APPLICATION_CREDENTIALS", None)
+        os.environ.pop("GOOGLE_CLOUD_PROJECT", None)
         
-        final_api_key = api_key or os.getenv("GOOGLE_API_KEY")
+        # New V1 SDK usage: from google import genai
+        from google import genai
         
-        genai.configure(
-            api_key=final_api_key, 
-            transport="rest",
-            client_options=client_options.ClientOptions(
-                api_endpoint="generativelanguage.googleapis.com"
-            )
+        # Initialize Client requesting v1beta API version explicitly to avoid Vertex Auth issues
+        self.client = genai.Client(
+            api_key=api_key or os.getenv("GOOGLE_API_KEY"),
+            http_options={'api_version': 'v1beta'}
         )
-        # Initialize model immediately
-        self.model = genai.GenerativeModel(model_name)
 
     def generate(self, system_prompt: str, user_prompt: str, **kwargs) -> LLMResponse:
         start_time = time.perf_counter()
         try:
-            # Re-initialize with system instruction if needed or supported
-            # Note: For 1.5/2.0 Flash, system_instruction is supported in GenerativeModel init
-            self.model = genai.GenerativeModel(
-                self.model_name, 
-                system_instruction=system_prompt
+            # V1 SDK: client.models.generate_content
+            from google.genai import types
+            
+            # Configure thinking parameters if needed (Gemini 3 feature)
+            # Default to "low" for speed ("flash" optimization) unless specified
+            thinking_config = None
+            if "thinking_level" in kwargs:
+                thinking_config = types.ThinkingConfig(thinking_level=kwargs["thinking_level"])
+            
+            config = types.GenerateContentConfig(
+                system_instruction=system_prompt,
+                temperature=kwargs.get("temperature", 0.7),
+                thinking_config=thinking_config
             )
             
-            # config for generation
-            generation_config = genai.types.GenerationConfig(
-                temperature=kwargs.get("temperature", 0.7)
-            )
-            
-            response = self.model.generate_content(
-                user_prompt,
-                generation_config=generation_config
+            response = self.client.models.generate_content(
+                model=self.model_name,
+                contents=user_prompt,
+                config=config
             )
             
             content = response.text
             
-            # Usage metadata access
+            # Usage tracking
             usage = response.usage_metadata
-            input_tokens = usage.prompt_token_count
-            output_tokens = usage.candidates_token_count
+            input_tokens = usage.prompt_token_count if usage else 0
+            output_tokens = usage.candidates_token_count if usage else 0
             
             latency_ms = (time.perf_counter() - start_time) * 1000
             cost = self.calculate_cost(input_tokens, output_tokens)
