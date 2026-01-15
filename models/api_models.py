@@ -3,7 +3,7 @@ import os
 from typing import Dict, Any
 import openai
 
-import google.generativeai as genai
+
 from .unified_interface import UnifiedLLMInterface, LLMResponse
 from ..config import MODEL_PRICING
 
@@ -59,23 +59,36 @@ class OpenAIModel(APIModelBase):
 class GeminiModel(APIModelBase):
     def __init__(self, model_name: str, api_key: str = None):
         super().__init__(model_name)
-        genai.configure(api_key=api_key or os.getenv("GOOGLE_API_KEY"))
-        self.model = genai.GenerativeModel(model_name)
+        # New V1 SDK usage: from google import genai
+        from google import genai
+        self.client = genai.Client(api_key=api_key or os.getenv("GOOGLE_API_KEY"))
 
     def generate(self, system_prompt: str, user_prompt: str, **kwargs) -> LLMResponse:
         start_time = time.perf_counter()
         try:
-            # Gemini usually puts system instruction in model init or combined in prompt
-            # For simplicity, we'll combine them or use system_instruction if supported by updated SDK
-            # Newer API supports system_instruction on init. For this dynamic usage:
-            self.model = genai.GenerativeModel(self.model_name, system_instruction=system_prompt)
+            # V1 SDK: client.models.generate_content
+            # Config: Use types.GenerateContentConfig for system instruction/temperature
+            from google.genai import types
             
-            response = self.model.generate_content(user_prompt)
+            config = types.GenerateContentConfig(
+                system_instruction=system_prompt,
+                temperature=kwargs.get("temperature", 0.7)
+                # max_output_tokens not strictly needed unless specified
+            )
+            
+            response = self.client.models.generate_content(
+                model=self.model_name,
+                contents=user_prompt,
+                config=config
+            )
+            
             content = response.text
             
+            # Usage tracking might vary in V1 SDK structure
+            # Attempt to access standard usage_metadata if available
             usage = response.usage_metadata
-            input_tokens = usage.prompt_token_count
-            output_tokens = usage.candidates_token_count
+            input_tokens = usage.prompt_token_count if usage else 0
+            output_tokens = usage.candidates_token_count if usage else 0
             
             latency_ms = (time.perf_counter() - start_time) * 1000
             cost = self.calculate_cost(input_tokens, output_tokens)
