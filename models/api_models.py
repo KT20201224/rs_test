@@ -4,7 +4,7 @@ from typing import Dict, Any
 import openai
 
 
-from models import UnifiedLLMInterface, LLMResponse
+from .unified_interface import UnifiedLLMInterface, LLMResponse
 from config import MODEL_PRICING
 
 class APIModelBase(UnifiedLLMInterface):
