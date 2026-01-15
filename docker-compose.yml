@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  evaluator:
+    build: .
+    container_name: llm_evaluator
+    # Environment variables are loaded from .env file
+    env_file:
+      - .env
+    volumes:
+      # Mount the results directory to persist reports
+      - ./results:/app/restaurant_llm_evaluation/results
+    # Command examples:
+    # Run specific models:
+    # command: --models gpt-4o-mini gemini-2.0-flash
+    # Run all models:
+    # command: --models all
+    command: --models gpt-4o-mini gemini-2.0-flash
+
+    # Uncomment below to enable GPU support (requires nvidia-docker)
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
