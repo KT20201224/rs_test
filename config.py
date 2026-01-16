@@ -16,10 +16,8 @@ LOCAL_MODELS = {
     "qwen2.5-1.5b": "Qwen/Qwen2.5-1.5B-Instruct",
     "qwen2.5-3b": "Qwen/Qwen2.5-3B-Instruct",
     "qwen2.5-7b": "Qwen/Qwen2.5-7B-Instruct",
-    "qwen2.5-14b": "Qwen/Qwen2.5-14B-Instruct",
     "exaone-3.5-2.4b": "LGAI-EXAONE/EXAONE-3.5-2.4B-Instruct",
     "exaone-3.5-7.8b": "LGAI-EXAONE/EXAONE-3.5-7.8B-Instruct",
-    "exaone-3.5-32b": "LGAI-EXAONE/EXAONE-3.5-32B-Instruct",
     "gemma-2-9b": "google/gemma-2-9b-it",
     "ax-4.0-light": "skt/A.X-4.0-Light",
 }
