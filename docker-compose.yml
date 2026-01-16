@@ -18,6 +18,9 @@ services:
     command: --models all
 
     # Uncomment below to enable GPU support (requires nvidia-docker)
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
     deploy:
       resources:
         reservations:
