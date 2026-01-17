@@ -23,16 +23,19 @@ if st.sidebar.button("🚀 Run Evaluation", type="primary"):
         # Progress Bar
         progress_text = "Starting evaluation..."
         progress_bar = st.progress(0, text=progress_text)
-        
+
         all_results = []
         cost_tracker = CostTracker()
-        
+
         total_models = len(selected_model_names)
-        
+
         try:
             for idx, name in enumerate(selected_model_names):
-                progress_bar.progress((idx) / total_models, text=f"Processing {name} ({idx+1}/{total_models})...")
-                
+                progress_bar.progress(
+                    (idx) / total_models,
+                    text=f"Processing {name} ({idx + 1}/{total_models})...",
+                )
+
                 current_model = None
                 try:
                     # Factory Logic
@@ -43,24 +46,24 @@ if st.sidebar.button("🚀 Run Evaluation", type="primary"):
                                 st.error(f"Skipping {name}: OPENAI_API_KEY Missing")
                                 continue
                             current_model = OpenAIModel(full_name)
-                    
+
                     elif name in LOCAL_MODELS:
                         full_name = LOCAL_MODELS[name]
                         current_model = LocalHuggingFaceModel(full_name)
-                    
+
                     else:
                         st.warning(f"Unknown model config: {name}")
                         continue
-                        
+
                     if current_model:
                         # Evaluate Single Model
                         evaluator = Evaluator([current_model], cost_tracker)
                         run_results = evaluator.run_all()
                         all_results.extend(run_results)
-                        
+
                 except Exception as e:
                     st.error(f"Error evaluating {name}: {str(e)}")
-                
+
                 finally:
                     # Cleanup Memory
                     if current_model:
@@ -68,9 +71,9 @@ if st.sidebar.button("🚀 Run Evaluation", type="primary"):
                     gc.collect()
                     if torch.cuda.is_available():
                         torch.cuda.empty_cache()
-            
+
             progress_bar.progress(1.0, text="Evaluation Complete!")
-            
+
             # 2. Add to session state
             st.session_state["run_results"] = all_results
             st.session_state["last_run_models"] = selected_model_names
@@ -89,8 +92,8 @@ if st.sidebar.button("🚀 Run Evaluation", type="primary"):
                     st.session_state["latest_report"] = f.read()
 
             st.success("Evaluation Complete!")
-            except Exception as e:
-                st.error(f"An error occurred: {e}")
+        except Exception as e:
+            st.error(f"An error occurred: {e}")
 
 # Display Results
 if "run_results" in st.session_state:
