@@ -6,6 +6,7 @@ import glob
 from evaluation.evaluators import Evaluator
 from config import API_MODELS, LOCAL_MODELS
 from utils.report_generator import ReportGenerator
+from utils.cost_tracker import CostTracker
 
 # Set page config
 st.set_page_config(page_title="LLM Persona Evaluator", page_icon="🍽️", layout="wide")
@@ -43,7 +44,8 @@ if st.sidebar.button("🚀 Run Evaluation", type="primary"):
         ):
             try:
                 # 1. Run Evaluation
-                evaluator = Evaluator(selected_models)
+                cost_tracker = CostTracker()
+                evaluator = Evaluator(selected_models, cost_tracker)
                 run_results = evaluator.run_all()
 
                 # 2. Add to session state
