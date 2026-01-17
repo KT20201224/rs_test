@@ -75,20 +75,20 @@ if st.sidebar.button("🚀 Run Evaluation", type="primary"):
             st.session_state["run_results"] = all_results
             st.session_state["last_run_models"] = selected_model_names
 
-                # 3. Generate Report to get stats
-                # We can reuse ReportGenerator logic or process manually
-                # Let's save results temporarily to leverage existing logic
-                if not os.path.exists("./results"):
-                    os.makedirs("./results")
+            # 3. Generate Report to get stats
+            # We can reuse ReportGenerator logic or process manually
+            # Let's save results temporarily to leverage existing logic
+            if not os.path.exists("./results"):
+                os.makedirs("./results")
 
-                # Find latest report
-                list_of_files = glob.glob("./results/report_*.md")
-                if list_of_files:
-                    latest_file = max(list_of_files, key=os.path.getctime)
-                    with open(latest_file, "r") as f:
-                        st.session_state["latest_report"] = f.read()
+            # Find latest report
+            list_of_files = glob.glob("./results/report_*.md")
+            if list_of_files:
+                latest_file = max(list_of_files, key=os.path.getctime)
+                with open(latest_file, "r") as f:
+                    st.session_state["latest_report"] = f.read()
 
-                st.success("Evaluation Complete!")
+            st.success("Evaluation Complete!")
             except Exception as e:
                 st.error(f"An error occurred: {e}")
 
