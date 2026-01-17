@@ -19,6 +19,7 @@ services:
     command: streamlit run dashboard.py --server.port=8501 --server.address=0.0.0.0
     ports:
       - "8501:8501"
+    tty: true
 
     # Uncomment below to enable GPU support (requires nvidia-docker)
     environment:
