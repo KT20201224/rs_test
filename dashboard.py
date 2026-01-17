@@ -13,7 +13,31 @@ from config import OPENAI_API_KEY
 import gc
 import torch
 
-# ... (Previous imports remain same)
+# Set page config
+st.set_page_config(page_title="LLM Persona Evaluator", page_icon="🍽️", layout="wide")
+
+# Title
+st.title("🍽️ Restaurant LLM Persona Evaluator")
+st.markdown("""
+이 대시보드는 다양한 LLM 모델이 **'사용자 페르소나'**를 얼마나 잘 생성하는지 정량적/정성적으로 평가합니다.
+""")
+
+# Sidebar: Model Selection
+st.sidebar.header("Model Selection")
+
+st.sidebar.subheader("API Models")
+selected_api_models = st.sidebar.multiselect(
+    "OpenAI / Others", options=list(API_MODELS.keys()), default=list(API_MODELS.keys())
+)
+
+st.sidebar.subheader("Local Models (GPU)")
+selected_local_models = st.sidebar.multiselect(
+    "HuggingFace Models",
+    options=list(LOCAL_MODELS.keys()),
+    default=[],  # Default to empty to avoid heavy load by mistake
+)
+
+selected_model_names = selected_api_models + selected_local_models
 
 # Run Button
 if st.sidebar.button("🚀 Run Evaluation", type="primary"):
