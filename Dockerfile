@@ -28,6 +28,5 @@ RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
 # Copy project files
 COPY . .
 
-# Default entrypoint
-ENTRYPOINT ["python", "main.py"]
-CMD ["--help"]
+# Default command (can be overridden by docker-compose)
+CMD ["python", "main.py", "--help"]
