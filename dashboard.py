@@ -7,6 +7,7 @@ from evaluation.evaluators import Evaluator
 from config import API_MODELS, LOCAL_MODELS
 from utils.report_generator import ReportGenerator
 from utils.cost_tracker import CostTracker
+from models.unified_interface import UnifiedLLMInterface
 
 # Set page config
 st.set_page_config(page_title="LLM Persona Evaluator", page_icon="🍽️", layout="wide")
@@ -32,20 +33,25 @@ selected_local_models = st.sidebar.multiselect(
     default=[],  # Default to empty to avoid heavy load by mistake
 )
 
-selected_models = selected_api_models + selected_local_models
+selected_model_names = selected_api_models + selected_local_models
 
 # Run Button
 if st.sidebar.button("🚀 Run Evaluation", type="primary"):
-    if not selected_models:
+    if not selected_model_names:
         st.error("Please select at least one model.")
     else:
         with st.spinner(
-            f"Evaluating models: {', '.join(selected_models)}... This may take a while."
+            f"Evaluating models: {', '.join(selected_model_names)}... This may take a while."
         ):
             try:
+                # 0. Instantiate Models
+                loaded_models = []
+                for name in selected_model_names:
+                    loaded_models.append(UnifiedLLMInterface(name))
+
                 # 1. Run Evaluation
                 cost_tracker = CostTracker()
-                evaluator = Evaluator(selected_models, cost_tracker)
+                evaluator = Evaluator(loaded_models, cost_tracker)
                 run_results = evaluator.run_all()
 
                 # 2. Add to session state
