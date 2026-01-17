@@ -56,7 +56,7 @@ if st.sidebar.button("🚀 Run Evaluation", type="primary"):
 
                 # 2. Add to session state
                 st.session_state["run_results"] = run_results
-                st.session_state["last_run_models"] = selected_models
+                st.session_state["last_run_models"] = selected_model_names
 
                 # 3. Generate Report to get stats
                 # We can reuse ReportGenerator logic or process manually
