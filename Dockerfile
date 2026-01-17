@@ -21,8 +21,9 @@ RUN ln -s /usr/bin/python3 /usr/bin/python
 
 # Install Python dependencies
 COPY requirements.txt .
-# Ensure torch detects CUDA appropriately (pip usually handles this if CUDA is present on host but safe to be explicit sometimes)
-RUN pip install --no-cache-dir -r requirements.txt
+# Upgrade pip and install build dependencies to avoid build errors
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
+    pip install --no-cache-dir -r requirements.txt
 
 # Copy project files
 COPY . .
